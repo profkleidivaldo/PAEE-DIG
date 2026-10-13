@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PAEE – Planos curriculares</title>
+<style>
+  :root{
+    --bg:#f6f4ef; --card:#ffffff; --ink:#1f2a37; --muted:#667085; --line:#e4e0d6;
+    --brand:#0f766e; --brand-d:#0b5a54; --brand-l:#e1f3f0; --warn:#b45309; --warn-l:#fef3c7;
+    --err:#b42318; --err-l:#fee4e2; --ok:#166534; --ok-l:#dcfce7; --accent:#7c3aed;
+    --radius:12px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+  button,input,select,textarea{font:inherit;color:inherit}
+  h1,h2,h3{margin:0;line-height:1.25}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+  header.top{background:var(--brand);color:#fff;position:sticky;top:0;z-index:20;box-shadow:0 1px 6px rgba(0,0,0,.18)}
+  header.top .wrap{display:flex;align-items:center;gap:12px;min-height:58px;flex-wrap:wrap;padding-top:8px;padding-bottom:8px}
+  header.top h1{font-size:18px;font-weight:600;flex:1;min-width:160px}
+  header.top .sub{font-weight:400;opacity:.8;font-size:13px}
+  .btn{border:1px solid var(--line);background:#fff;border-radius:9px;padding:7px 13px;cursor:pointer;font-weight:500;display:inline-flex;align-items:center;gap:6px}
+  .btn:hover{background:#f3f4f6}
+  .btn:disabled{opacity:.55;cursor:not-allowed}
+  .btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+  .btn.primary:hover{background:var(--brand-d)}
+  .btn.ai{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.ai:hover{background:#6d28d9}
+  .btn.danger{color:var(--err);border-color:#f3c3be}
+  .btn.small{padding:4px 9px;font-size:13px}
+  .btn.ghost{background:transparent;border-color:transparent}
+  header.top .btn{background:rgba(255,255,255,.14);color:#fff;border-color:rgba(255,255,255,.35)}
+  header.top .btn:hover{background:rgba(255,255,255,.26)}
+  header.top .btn.primary{background:#fff;color:var(--brand-d);border-color:#fff}
+  main{padding:22px 0 80px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;margin-bottom:16px}
+  .card h2{font-size:17px;margin-bottom:4px}
+  .hint{color:var(--muted);font-size:13px}
+  .banner{border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:14px}
+  .banner.warn{background:var(--warn-l);color:#7a3f06;border:1px solid #f6d58a}
+  .banner.err{background:var(--err-l);color:var(--err);border:1px solid #f3c3be}
+  .grid{display:grid;gap:12px}
+  .g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+  @media(max-width:820px){.g2,.g3,.g4{grid-template-columns:1fr}}
+  label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600;color:#344054}
+  label.f input,label.f select,label.f textarea,.ctl{border:1px solid #cfd4dc;border-radius:8px;padding:8px 10px;background:#fff;font-weight:400;font-size:14.5px;width:100%}
+  textarea{resize:vertical;line-height:1.45}
+  input:focus,select:focus,textarea:focus{outline:2px solid #5eead4;border-color:var(--brand)}
+  /* lista */
+  .toolbar{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+  .toolbar .ctl{max-width:320px}
+  .plist{display:grid;gap:10px}
+  .prow{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:14px 18px}
+  .prow .t{font-weight:600;font-size:16px}
+  .prow .m{color:var(--muted);font-size:13px}
+  .prow .acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+  .empty{text-align:center;padding:50px 20px;color:var(--muted)}
+  /* editor */
+  .status{font-size:13px;padding:2px 10px;border-radius:99px;background:rgba(255,255,255,.18)}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0 4px}
+  .tab{border:1px solid var(--line);background:#fff;border-radius:99px;padding:6px 14px;cursor:pointer;font-weight:500;font-size:14px;display:inline-flex;gap:7px;align-items:center}
+  .tab[aria-selected=true]{background:var(--brand);border-color:var(--brand);color:#fff}
+  .tab .n{background:var(--brand-l);color:var(--brand-d);border-radius:99px;padding:0 7px;font-size:12px;font-weight:700}
+  .tab[aria-selected=true] .n{background:#fff}
+  .picker{border:1px dashed #9ec9c3;background:#f4fbf9;border-radius:var(--radius);padding:14px;margin:10px 0 16px}
+  .picker .bar{display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-bottom:10px}
+  .picker .bar label{max-width:220px}
+  .tree{max-height:380px;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:10px;padding:6px 10px}
+  details.un>summary{cursor:pointer;font-weight:700;padding:7px 0;color:var(--brand-d)}
+  .obj{margin:4px 0 10px 8px;padding-left:10px;border-left:3px solid var(--brand-l)}
+  .obj .oh{display:flex;gap:8px;align-items:flex-start;font-weight:600;font-size:14px;margin-bottom:3px}
+  .sk{display:flex;gap:8px;align-items:flex-start;padding:3px 0;font-size:14px}
+  .sk input,.oh input{margin-top:4px;flex:none;width:16px;height:16px}
+  .sk .code{font-weight:700;color:var(--brand-d);white-space:nowrap}
+  .tagin{font-size:11px;background:var(--ok-l);color:var(--ok);border-radius:99px;padding:1px 7px;margin-left:6px;white-space:nowrap}
+  .picker .foot{display:flex;gap:12px;align-items:center;margin-top:10px;flex-wrap:wrap}
+  .picker .foot .sp{flex:1}
+  .block{border:1px solid var(--line);border-left:5px solid var(--brand);background:#fff;border-radius:var(--radius);padding:14px 16px;margin-bottom:14px}
+  .block .bh{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+  .block .bh .ttl{font-weight:700;flex:1;min-width:200px}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}
+  .chip{background:var(--brand-l);color:var(--brand-d);border-radius:8px;padding:3px 8px;font-size:13px;display:inline-flex;gap:6px;align-items:center;max-width:100%}
+  .chip b{white-space:nowrap}
+  .chip .tx{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:420px}
+  .chip button{border:0;background:transparent;cursor:pointer;color:var(--brand-d);font-size:15px;line-height:1;padding:0}
+  .hlist{font-size:13.5px;background:#f8fafc;border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin-bottom:10px}
+  .hlist div{padding:2px 0}
+  .fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+  @media(max-width:980px){.fields{grid-template-columns:1fr}}
+  .fields .wide{grid-column:1/-1}
+  .fields textarea{min-height:110px}
+  .busy{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.5);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .errline{color:var(--err);font-size:13px;margin-top:6px}
+  .progress{height:8px;background:#e5e7eb;border-radius:99px;overflow:hidden;margin:8px 0}
+  .progress>i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
+  /* modal & toast */
+  .overlay{position:fixed;inset:0;background:rgba(15,23,42,.45);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+  .modal{background:#fff;border-radius:14px;max-width:460px;width:100%;padding:20px;box-shadow:0 20px 50px rgba(0,0,0,.3)}
+  .modal p{margin:8px 0 16px}
+  .modal .row{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+  #toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#111827;color:#fff;padding:10px 18px;border-radius:10px;z-index:60;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90vw}
+  #toast.show{opacity:1}
+  #toast.err{background:var(--err)}
+  .loading{padding:60px;text-align:center;color:var(--muted)}
+  /* impressão */
+  #printArea{display:none}
+  @media print{
+    body{background:#fff;font-size:10pt}
+    header.top,main,#toast,.overlay{display:none!important}
+    #printArea{display:block}
+    #printArea h1{font-size:13pt;text-align:center;margin:0 0 4px}
+    #printArea h2{font-size:11pt;background:#9fc5e8;padding:3px 6px;margin:12px 0 0;border:1px solid #666}
+    #printArea table{width:100%;border-collapse:collapse;table-layout:fixed}
+    #printArea th{background:#cfe2f3;font-size:9pt;border:1px solid #666;padding:3px}
+    #printArea td{border:1px solid #666;padding:4px;vertical-align:top;font-size:9pt;white-space:pre-wrap;word-wrap:break-word}
+    #printArea .info td{background:#fff}
+    #printArea .info td.k{background:#cfe2f3;font-weight:bold;width:15%}
+    @page{size:A4 landscape;margin:10mm}
+  }
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap" id="topbar"></div></header>
+<main><div class="wrap" id="app"><div class="loading">Carregando o catálogo da BNCC…</div></div></main>
+<div id="toast"></div>
+<div id="printArea"></div>
+
+<script src="data/Dados_LP.js"></script>
+<script src="data/Dados_Matematica.js"></script>
+<script src="data/Dados_Ciencias.js"></script>
+<script src="data/Dados_Historia.js"></script>
+<script src="data/Dados_Geografia.js"></script>
+<script src="data/Dados_Arte.js"></script>
+<script src="data/Dados_EdFisica.js"></script>
+<script src="data/Dados_EnsinoReligioso.js"></script>
+<script src="data/Dados_Ingles.js"></script>
+<script>
+/* ============================ utilidades ============================ */
+var $ = function (s, r) { return (r || document).querySelector(s); };
+function h(tag, attrs) {
+  var el = document.createElement(tag);
+  if (attrs) Object.keys(attrs).forEach(function (k) {
+    var v = attrs[k];
+    if (v === null || v === undefined || v === false) return;
+    if (k === 'class') el.className = v;
+    else if (k === 'text') el.textContent = v;
+    else if (k.slice(0, 2) === 'on') el.addEventListener(k.slice(2), v);
+    else if (k === 'value') el.value = v;
+    else if (k === 'checked') el.checked = !!v;
+    else el.setAttribute(k, v === true ? '' : v);
+  });
+  for (var i = 2; i < arguments.length; i++) add(el, arguments[i]);
+  return el;
+}
+function add(el, c) {
+  if (c === null || c === undefined || c === false) return;
+  if (Array.isArray(c)) c.forEach(function (x) { add(el, x); });
+  else el.appendChild(typeof c === 'object' ? c : document.createTextNode(String(c)));
+}
+/* ---- API (Google Apps Script) ---- */
+/* >>> EDITE AQUI: cole a URL /exec da sua implantação e o mesmo valor de API_TOKEN das Propriedades do script <<< */
+var API_URL = 'COLE_AQUI_A_URL_DO_APPS_SCRIPT/exec';
+var API_TOKEN = 'COLE_AQUI_O_TOKEN';
+
+function srv(fn) {
+  var args = Array.prototype.slice.call(arguments, 1);
+  if (fn === 'getBncc') return Promise.resolve(window.BNCC_DADOS || {});
+  var url = API_URL;
+  if (!/^https:\/\/script\.google\.com\//.test(url)) return Promise.reject(new Error('Defina API_URL no início do script do index.html.'));
+  return fetch(url, {
+    method: 'POST', redirect: 'follow',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // requisição simples: sem preflight de CORS
+    body: JSON.stringify({ action: fn, token: API_TOKEN, args: args })
+  }).then(function (r) {
+    if (!r.ok) throw new Error('Servidor respondeu HTTP ' + r.status);
+    return r.json();
+  }).then(function (j) {
+    if (!j.ok) throw new Error(j.erro || 'Erro desconhecido na API.');
+    return j.dados;
+  }, function (e) {
+    throw new Error('Falha de rede ao acessar a API (' + (e.message || e) + '). Confira a URL e se a implantação está como "Qualquer pessoa".');
+  });
+}
+function uid() { return 'b' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+function norm(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
+function fmtData(iso) {
+  var m = /^(\d{4})-(\d\d)-(\d\d)T(\d\d):(\d\d)/.exec(iso || '');
+  return m ? m[3] + '/' + m[2] + '/' + m[1] + ' ' + m[4] + ':' + m[5] : '';
+}
+var toastT;
+function toast(msg, err) {
+  var t = $('#toast'); t.textContent = msg; t.className = 'show' + (err ? ' err' : '');
+  clearTimeout(toastT); toastT = setTimeout(function () { t.className = ''; }, err ? 6000 : 2600);
+}
+function modal(titulo, msg, botoes) { // botoes: [{label, value, cls}]
+  return new Promise(function (res) {
+    var ov = h('div', { class: 'overlay' },
+      h('div', { class: 'modal', role: 'dialog' }, h('h3', { text: titulo }),
+        (typeof msg === 'string') ? h('p', { text: msg }) : msg,
+        h('div', { class: 'row' }, botoes.map(function (b) {
+          return h('button', { class: 'btn ' + (b.cls || ''), text: b.label, onclick: function () { ov.remove(); res(b.value); } });
+        }))));
+    document.body.appendChild(ov);
+  });
+}
+function confirmar(titulo, msg, ok) {
+  return modal(titulo, msg, [{ label: 'Cancelar', value: false }, { label: ok || 'Confirmar', value: true, cls: 'primary' }]);
+}
+function autosize(t) { t.style.height = 'auto'; t.style.height = Math.max(t.scrollHeight + 2, 110) + 'px'; }
+
+/* ============================ estado ============================ */
+var ORDEM = ['Língua Portuguesa', 'Matemática', 'Ciências', 'História', 'Geografia', 'Arte', 'Educação Física', 'Ensino Religioso', 'Língua Inglesa'];
+var BNCC = null, CFG = {}, PLANOS = [], plano = null, dirty = false, saving = false, saveTimer = null;
+var tabAtual = ORDEM[0], anoBncc = 4, selecao = {}, buscaPick = '', agrupar = false, cancelarIA = false, iaAtiva = {};
+
+function planoNovo() {
+  return {
+    id: '', versao: 1,
+    aluno: { nome: '', anoEscolar: '4º Ano', escola: '', professorAEE: '', periodo: '2º semestre', anoLetivo: new Date().getFullYear() },
+    perfil: { necessidades: '', interesses: '', nivelAtual: '', apoios: '', estimulo: 'moderada' },
+    blocos: [], observacoes: ''
+  };
+}
+function anoNumero(txt) { var m = /(\d)/.exec(txt || ''); return m ? Number(m[1]) : 4; }
+function marcarSujo() {
+  dirty = true; atualizarStatus();
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(function () { if (dirty && !saving && plano && plano.aluno.nome.trim()) salvar(true); }, 25000);
+}
+function atualizarStatus() {
+  var s = $('#status'); if (!s) return;
+  s.textContent = saving ? 'Salvando…' : dirty ? 'Alterações não salvas' : (plano && plano.id ? 'Salvo' : 'Novo plano');
+}
+window.addEventListener('beforeunload', function (e) { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
+document.addEventListener('keydown', function (e) { if ((e.ctrlKey || e.metaKey) && e.key === 's' && plano) { e.preventDefault(); salvar(false); } });
+
+/* ============================ início ============================ */
+function init() {
+  Promise.all([srv('getBncc'), srv('getConfig'), srv('listarPlanos')]).then(function (r) {
+    BNCC = r[0]; CFG = r[1]; PLANOS = r[2];
+    ORDEM = ORDEM.filter(function (c) { return BNCC[c]; }).concat(Object.keys(BNCC).filter(function (c) { return ORDEM.indexOf(c) < 0; }));
+    telaLista();
+  }).catch(function (e) {
+    $('#app').innerHTML = '';
+    barra(h('h1', null, 'PAEE · Planos curriculares'));
+    $('#app').appendChild(h('div', { class: 'banner err', text: 'Não foi possível carregar o app: ' + e.message }));
+  });
+}
+
+/* ============================ lista de planos ============================ */
+function barra(conteudo) { var t = $('#topbar'); t.innerHTML = ''; add(t, conteudo); }
+
+function telaLista() {
+  plano = null; dirty = false;
+  barra([
+    h('h1', null, 'PAEE · Planos curriculares ', h('span', { class: 'sub', text: 'BNCC + IA' })),
+    h('button', { class: 'btn', text: 'Testar IA', onclick: testarIA }),
+    h('button', { class: 'btn primary', text: '+ Novo plano', onclick: function () { abrirEditor(planoNovo()); } })
+  ]);
+  var app = $('#app'); app.innerHTML = '';
+  if (!CFG.temChave) app.appendChild(h('div', { class: 'banner warn' },
+    h('b', { text: 'Chave da Groq não configurada. ' }),
+    'No editor do Apps Script: Configurações do projeto → Propriedades do script → adicione GROQ_API_KEY. Sem ela você pode montar e salvar os planos, mas a IA não completa os campos.'));
+  var busca = h('input', { class: 'ctl', type: 'search', placeholder: 'Buscar por estudante ou período…', oninput: function () { desenhar(); } });
+  var box = h('div', { class: 'plist' });
+  app.appendChild(h('div', { class: 'toolbar' }, busca,
+    CFG.urlBanco ? h('a', { href: CFG.urlBanco, target: '_blank', class: 'hint', text: 'Abrir planilha-banco ↗' }) : null));
+  app.appendChild(box);
+  function desenhar() {
+    var q = norm(busca.value);
+    box.innerHTML = '';
+    var lista = PLANOS.filter(function (p) { return !q || norm(p.aluno + ' ' + p.periodo + ' ' + p.anoEscolar).indexOf(q) >= 0; });
+    if (!lista.length) { box.appendChild(h('div', { class: 'empty' }, h('p', { text: PLANOS.length ? 'Nenhum plano encontrado.' : 'Nenhum plano salvo ainda.' }), h('button', { class: 'btn primary', text: 'Criar o primeiro plano', onclick: function () { abrirEditor(planoNovo()); } }))); return; }
+    lista.forEach(function (p) {
+      box.appendChild(h('div', { class: 'prow' },
+        h('div', null, h('div', { class: 't', text: p.aluno || '(sem nome)' }), h('div', { class: 'm', text: [p.anoEscolar, p.periodo, 'atualizado em ' + fmtData(p.atualizadoEm)].filter(Boolean).join(' · ') })),
+        h('div', { class: 'acts' },
+          h('button', { class: 'btn primary small', text: 'Abrir / editar', onclick: function () { abrirPorId(p.id); } }),
+          h('button', { class: 'btn small', text: 'Duplicar', onclick: function () { duplicar(p); } }),
+          h('button', { class: 'btn small danger', text: 'Excluir', onclick: function () { excluir(p); } }))));
+    });
+  }
+  desenhar();
+}
+function recarregarLista() { return srv('listarPlanos').then(function (l) { PLANOS = l; }); }
+function abrirPorId(id) {
+  toast('Abrindo plano…');
+  srv('obterPlano', id).then(abrirEditor).catch(function (e) { toast(e.message, true); });
+}
+function duplicar(p) {
+  modal('Duplicar plano', 'Como deseja duplicar o plano de "' + (p.aluno || 'sem nome') + '"?', [
+    { label: 'Cancelar', value: null },
+    { label: 'Mesmo estudante (cópia)', value: 'mesmo' },
+    { label: 'Para outro estudante (limpa perfil)', value: 'outro', cls: 'primary' }
+  ]).then(function (v) {
+    if (!v) return;
+    srv('duplicarPlano', p.id, v === 'outro').then(function () { return recarregarLista(); }).then(function () { telaLista(); toast('Plano duplicado.'); }).catch(function (e) { toast(e.message, true); });
+  });
+}
+function excluir(p) {
+  confirmar('Excluir plano', 'Excluir definitivamente o plano de "' + (p.aluno || 'sem nome') + '"? Esta ação não pode ser desfeita.', 'Excluir').then(function (ok) {
+    if (!ok) return;
+    srv('excluirPlano', p.id).then(recarregarLista).then(function () { telaLista(); toast('Plano excluído.'); }).catch(function (e) { toast(e.message, true); });
+  });
+}
+function testarIA() {
+  toast('Testando a conexão com a Groq…');
+  srv('testarGroq').then(function (r) { toast('IA funcionando (' + r.modelo + ').'); }).catch(function (e) { toast(e.message, true); });
+}
+
+/* ============================ editor ============================ */
+function abrirEditor(p) {
+  plano = p; dirty = false; selecao = {}; buscaPick = '';
+  plano.aluno = Object.assign(planoNovo().aluno, plano.aluno || {});
+  plano.perfil = Object.assign(planoNovo().perfil, plano.perfil || {});
+  plano.blocos = plano.blocos || [];
+  anoBncc = anoNumero(plano.aluno.anoEscolar);
+  tabAtual = (plano.blocos[0] && plano.blocos[0].componente) || ORDEM[0];
+  desenharEditor();
+}
+function desenharTopo() {
+  barra([
+    h('button', { class: 'btn', text: '← Planos', onclick: voltar }),
+    h('h1', { id: 'titulo', text: plano.aluno.nome ? 'Plano de ' + plano.aluno.nome : 'Novo plano' }),
+    h('span', { class: 'status', id: 'status', text: '' }),
+    h('button', { class: 'btn', text: 'Imprimir', onclick: imprimir }),
+    h('button', { class: 'btn', text: 'Exportar p/ Planilha', onclick: exportar }),
+    h('button', { class: 'btn primary', text: 'Salvar', onclick: function () { salvar(false); } })
+  ]);
+  atualizarStatus();
+}
+function voltar() {
+  if (!dirty) { recarregarLista().then(telaLista); return; }
+  modal('Alterações não salvas', 'Deseja salvar antes de sair?', [
+    { label: 'Cancelar', value: 'c' }, { label: 'Sair sem salvar', value: 'n', cls: 'danger' }, { label: 'Salvar e sair', value: 's', cls: 'primary' }
+  ]).then(function (v) {
+    if (v === 'n') { dirty = false; recarregarLista().then(telaLista); }
+    if (v === 's') salvar(false).then(function (ok) { if (ok) recarregarLista().then(telaLista); });
+  });
+}
+function salvar(silencioso) {
+  if (saving) return Promise.resolve(false);
+  if (!plano.aluno.nome.trim()) { toast('Informe o nome do estudante para salvar.', true); return Promise.resolve(false); }
+  saving = true; atualizarStatus();
+  return srv('salvarPlano', plano).then(function (r) {
+    plano.id = r.id; plano.criadoEm = r.criadoEm; plano.atualizadoEm = r.atualizadoEm;
+    dirty = false; saving = false; atualizarStatus();
+    if (!silencioso) toast('Plano salvo.');
+    return true;
+  }).catch(function (e) { saving = false; atualizarStatus(); toast('Erro ao salvar: ' + e.message, true); return false; });
+}
+function exportar() {
+  salvar(true).then(function (ok) {
+    if (!ok && !plano.id) return;
+    toast('Gerando planilha…');
+    srv('exportarPlano', plano.id).then(function (r) {
+      modal('Planilha criada', h('p', null, 'A planilha foi criada no seu Google Drive. ', h('a', { href: r.url, target: '_blank', text: 'Abrir planilha ↗' })), [{ label: 'Fechar', value: true, cls: 'primary' }]);
+    }).catch(function (e) { toast(e.message, true); });
+  });
+}
+
+function campoTexto(rotulo, obj, chave, opts) {
+  opts = opts || {};
+  var el = opts.linha ? h('input', { type: 'text', value: obj[chave] || '', placeholder: opts.ph || '' }) : h('textarea', { rows: opts.rows || 3, placeholder: opts.ph || '' });
+  if (!opts.linha) { el.value = obj[chave] || ''; }
+  el.addEventListener('input', function () { obj[chave] = el.value; if (!opts.linha) autosize(el); marcarSujo(); if (opts.aoMudar) opts.aoMudar(el.value); });
+  if (!opts.linha) setTimeout(function () { autosize(el); }, 0);
+  return h('label', { class: 'f' + (opts.cls ? ' ' + opts.cls : '') }, rotulo, el);
+}
+function seletor(rotulo, obj, chave, opcoes, aoMudar) {
+  var s = h('select', null, opcoes.map(function (o) { var v = Array.isArray(o) ? o[0] : o, t = Array.isArray(o) ? o[1] : o; return h('option', { value: v, text: t, selected: obj[chave] === v }); }));
+  s.addEventListener('change', function () { obj[chave] = s.value; marcarSujo(); if (aoMudar) aoMudar(s.value); });
+  return h('label', { class: 'f' }, rotulo, s);
+}
+
+function desenharEditor() {
+  desenharTopo();
+  var app = $('#app'); app.innerHTML = '';
+  if (!CFG.temChave) app.appendChild(h('div', { class: 'banner warn', text: 'Chave da Groq não configurada: defina GROQ_API_KEY nas Propriedades do script para usar a IA.' }));
+  var a = plano.aluno, pf = plano.perfil;
+  var anos = ['1º Ano', '2º Ano', '3º Ano', '4º Ano', '5º Ano', '6º Ano', '7º Ano', '8º Ano', '9º Ano'];
+  app.appendChild(h('div', { class: 'card' }, h('h2', { text: '1. Identificação' }),
+    h('div', { class: 'grid g4', style: 'margin-top:10px' },
+      campoTexto('Nome do estudante *', a, 'nome', { linha: true, aoMudar: function (v) { $('#titulo').textContent = v ? 'Plano de ' + v : 'Novo plano'; } }),
+      seletor('Ano escolar', a, 'anoEscolar', anos, function (v) { anoBncc = anoNumero(v); desenharComponentes(); }),
+      campoTexto('Escola', a, 'escola', { linha: true }),
+      campoTexto('Professor(a) do AEE', a, 'professorAEE', { linha: true }),
+      seletor('Período do plano', a, 'periodo', ['1º semestre', '2º semestre', '1º trimestre', '2º trimestre', '3º trimestre', 'Anual']),
+      campoTexto('Ano letivo', a, 'anoLetivo', { linha: true }))));
+  app.appendChild(h('div', { class: 'card' }, h('h2', { text: '2. Perfil do estudante (usado pela IA)' }),
+    h('p', { class: 'hint', text: 'Quanto mais específico, melhor o texto gerado. Evite escrever dados que identifiquem o estudante (nome completo, documentos, endereço): este texto é enviado à IA.' }),
+    h('div', { class: 'grid g2', style: 'margin-top:10px' },
+      campoTexto('Necessidades e dificuldades', pf, 'necessidades', { rows: 4, ph: 'Ex.: dificuldade de atenção e de iniciar tarefas; troca letras na fala; precisa de mediação para se organizar…' }),
+      campoTexto('Interesses e potencialidades', pf, 'interesses', { rows: 4, ph: 'Ex.: gosta de correr e jogar bola; responde bem a jogos e desafios…' }),
+      campoTexto('Nível atual / o que já aprendeu', pf, 'nivelAtual', { rows: 3, ph: 'Ex.: soma e subtrai com material concreto; ainda não alcançou o milhar…' }),
+      campoTexto('Apoios que funcionam', pf, 'apoios', { rows: 3, ph: 'Ex.: instruções curtas, apoio visual, pausas com movimento, reforço positivo…' })),
+    h('div', { class: 'grid g3', style: 'margin-top:12px' },
+      seletor('Nível de estímulo desejado', pf, 'estimulo', [['consolidacao', 'Consolidar o que já sabe'], ['moderada', 'Avançar gradualmente'], ['ampliada', 'Ampliar o estímulo (mais desafios)']]))));
+  app.appendChild(h('div', { class: 'card', id: 'compCard' }));
+  desenharComponentes();
+  app.appendChild(h('div', { class: 'card' }, h('h2', { text: '4. Observações gerais' }),
+    h('div', { style: 'margin-top:8px' }, campoTexto('', plano, 'observacoes', { rows: 3, ph: 'Observações para a equipe, combinados com a família, etc.' }))));
+  atualizarStatus();
+}
+
+function contar(comp) { return plano.blocos.filter(function (b) { return b.componente === comp; }).length; }
+
+function desenharComponentes() {
+  var card = $('#compCard'); if (!card) return;
+  card.innerHTML = '';
+  card.appendChild(h('h2', { text: '3. Conteúdos, habilidades da BNCC e adaptações por componente' }));
+  var anoSel = h('select', { class: 'ctl', style: 'max-width:200px' }, [1, 2, 3, 4, 5, 6, 7, 8, 9].map(function (n) { return h('option', { value: n, text: n + 'º ano', selected: n === anoBncc }); }));
+  anoSel.addEventListener('change', function () { anoBncc = Number(anoSel.value); selecao = {}; desenharComponentes(); });
+  var total = plano.blocos.filter(function (b) { return !(b.meta && b.estrategias && b.recursos && b.avaliacao); }).length;
+  card.appendChild(h('div', { class: 'toolbar', style: 'margin-top:8px' },
+    h('label', { class: 'f', style: 'flex-direction:row;align-items:center;gap:8px' }, 'Consultar BNCC do', anoSel),
+    h('span', { class: 'hint', text: 'Para adaptação curricular, consulte anos anteriores ao do estudante.' }),
+    h('span', { style: 'flex:1' }),
+    h('button', { class: 'btn ai', id: 'btnTodos', text: '✨ Completar todos com IA' + (total ? ' (' + total + ')' : ''), disabled: !total, onclick: completarTodos })));
+  var progresso = h('div', { id: 'progBox', style: 'display:none' }, h('div', { class: 'hint', id: 'progTxt' }), h('div', { class: 'progress' }, h('i', { id: 'progBar' })), h('button', { class: 'btn small', text: 'Parar', onclick: function () { cancelarIA = true; } }));
+  card.appendChild(progresso);
+  card.appendChild(h('div', { class: 'tabs', role: 'tablist' }, ORDEM.map(function (c) {
+    return h('button', { class: 'tab', role: 'tab', 'aria-selected': c === tabAtual ? 'true' : 'false', onclick: function () { tabAtual = c; desenharComponentes(); } }, c, contar(c) ? h('span', { class: 'n', text: contar(c) }) : null);
+  })));
+  card.appendChild(h('div', { id: 'pickerBox' }));
+  card.appendChild(h('div', { id: 'blocosBox' }));
+  desenharPicker();
+  desenharBlocos();
+}
+
+/* ---------- seleção de conteúdos e habilidades ---------- */
+function itensDoPicker() {
+  var q = norm(buscaPick);
+  return (BNCC[tabAtual] || []).filter(function (it) {
+    if (it[0].indexOf(anoBncc) < 0) return false;
+    return !q || norm(it[1] + ' ' + it[2] + ' ' + it[3] + ' ' + it[4]).indexOf(q) >= 0;
+  });
+}
+function codigosNoPlano() {
+  var s = {};
+  plano.blocos.forEach(function (b) { if (b.componente === tabAtual) b.habilidades.forEach(function (x) { s[x.codigo] = true; }); });
+  return s;
+}
+function desenharPicker() {
+  var box = $('#pickerBox'); box.innerHTML = '';
+  var itens = itensDoPicker(), jaTem = codigosNoPlano();
+  var sel = selecao[tabAtual] = selecao[tabAtual] || {};
+  var busca = h('input', { class: 'ctl', type: 'search', placeholder: 'Filtrar por palavra ou código (ex.: EF04MA, fração, leitura)…', value: buscaPick });
+  busca.addEventListener('input', function () { buscaPick = busca.value; desenharArvore(); });
+  var tree = h('div', { class: 'tree', id: 'tree' });
+  box.appendChild(h('div', { class: 'picker' },
+    h('div', { class: 'bar' }, h('strong', { text: 'Adicionar da BNCC · ' + tabAtual + ' · ' + anoBncc + 'º ano' }), h('span', { style: 'flex:1' }), h('span', { class: 'hint', id: 'picCount', text: itens.length + ' habilidades' })),
+    busca, h('div', { style: 'height:8px' }), tree,
+    h('div', { class: 'foot' },
+      h('span', { id: 'selCount', class: 'hint' }), h('span', { class: 'sp' }),
+      h('label', { class: 'hint', style: 'display:flex;gap:6px;align-items:center' }, h('input', { type: 'checkbox', checked: agrupar, onchange: function (e) { agrupar = e.target.checked; } }), 'Agrupar tudo em um único bloco'),
+      h('button', { class: 'btn primary', id: 'btnAdd', text: 'Adicionar ao plano', onclick: adicionarSelecionadas }))));
+  desenharArvore();
+}
+function desenharArvore() {
+  var tree = $('#tree'); if (!tree) return;
+  tree.innerHTML = '';
+  var itens = itensDoPicker(), jaTem = codigosNoPlano(), sel = selecao[tabAtual];
+  var un = {};
+  itens.forEach(function (it) { ((un[it[1]] = un[it[1]] || {})[it[2]] = un[it[1]][it[2]] || []).push(it); });
+  var nomes = Object.keys(un);
+  if (!nomes.length) tree.appendChild(h('div', { class: 'empty', text: 'Nenhuma habilidade encontrada para este componente/ano.' }));
+  nomes.forEach(function (u, i) {
+    var det = h('details', { class: 'un', open: (nomes.length <= 3 || buscaPick || i === 0) }, h('summary', { text: u || '(sem unidade)' }));
+    Object.keys(un[u]).forEach(function (o) {
+      var lista = un[u][o];
+      var cbObj = h('input', { type: 'checkbox' });
+      var cbs = [];
+      function sincObj() { var n = lista.filter(function (it) { return sel[it[3]]; }).length; cbObj.checked = n === lista.length; cbObj.indeterminate = n > 0 && n < lista.length; }
+      cbObj.addEventListener('change', function () { lista.forEach(function (it, k) { if (cbObj.checked) sel[it[3]] = true; else delete sel[it[3]]; cbs[k].checked = cbObj.checked; }); contarSel(); });
+      var bloco = h('div', { class: 'obj' }, h('div', { class: 'oh' }, cbObj, h('span', { text: o || '(objeto de conhecimento não informado)' })));
+      lista.forEach(function (it) {
+        var cb = h('input', { type: 'checkbox', checked: !!sel[it[3]] });
+        cb.addEventListener('change', function () { if (cb.checked) sel[it[3]] = true; else delete sel[it[3]]; sincObj(); contarSel(); });
+        cbs.push(cb);
+        bloco.appendChild(h('label', { class: 'sk' }, cb, h('span', null, h('span', { class: 'code', text: it[3] + ' ' }), it[4], jaTem[it[3]] ? h('span', { class: 'tagin', text: 'já no plano' }) : null)));
+      });
+      sincObj();
+      det.appendChild(bloco);
+    });
+    tree.appendChild(det);
+  });
+  var pc = $('#picCount'); if (pc) pc.textContent = itens.length + ' habilidades';
+  contarSel();
+}
+function contarSel() {
+  var n = Object.keys(selecao[tabAtual] || {}).length;
+  var e = $('#selCount'); if (e) e.textContent = n + ' habilidade(s) selecionada(s)';
+  var b = $('#btnAdd'); if (b) b.disabled = !n;
+}
+function adicionarSelecionadas() {
+  var sel = selecao[tabAtual] || {};
+  var itens = (BNCC[tabAtual] || []).filter(function (it) { return sel[it[3]] && it[0].indexOf(anoBncc) >= 0; });
+  if (!itens.length) return;
+  var grupos = {}, ordem = [];
+  itens.forEach(function (it) {
+    var k = agrupar ? '__um__' : it[2];
+    if (!grupos[k]) { grupos[k] = []; ordem.push(k); }
+    grupos[k].push(it);
+  });
+  ordem.forEach(function (k) {
+    var objs = []; grupos[k].forEach(function (it) { if (it[2] && objs.indexOf(it[2]) < 0) objs.push(it[2]); });
+    plano.blocos.push({
+      id: uid(), componente: tabAtual, objeto: objs.join('; '), referencia: objs.join('; '),
+      habilidades: grupos[k].map(function (it) { return { codigo: it[3], texto: it[4], anos: it[0] }; }),
+      meta: '', estrategias: '', recursos: '', avaliacao: '', dica: ''
+    });
+  });
+  selecao[tabAtual] = {};
+  marcarSujo(); desenharComponentes();
+  toast(ordem.length + ' bloco(s) adicionado(s). Use "Completar com IA" para gerar os campos.');
+}
+
+/* ---------- blocos ---------- */
+function desenharBlocos() {
+  var box = $('#blocosBox'); box.innerHTML = '';
+  var lista = plano.blocos.filter(function (b) { return b.componente === tabAtual; });
+  if (!lista.length) { box.appendChild(h('div', { class: 'empty', text: 'Nenhum conteúdo de ' + tabAtual + ' no plano. Marque habilidades acima e clique em "Adicionar ao plano".' })); return; }
+  lista.forEach(function (b, i) { box.appendChild(cartaoBloco(b, i, lista.length)); });
+}
+function mover(b, d) {
+  var del = plano.blocos.indexOf(b);
+  var vizinhos = plano.blocos.map(function (x, i) { return x.componente === b.componente ? i : -1; }).filter(function (i) { return i >= 0; });
+  var pos = vizinhos.indexOf(del), alvo = vizinhos[pos + d];
+  if (alvo === undefined) return;
+  var t = plano.blocos[del]; plano.blocos[del] = plano.blocos[alvo]; plano.blocos[alvo] = t;
+  marcarSujo(); desenharBlocos();
+}
+function cartaoBloco(b, i, n) {
+  var card = h('div', { class: 'block', id: 'blk-' + b.id });
+  var chips = h('div', { class: 'chips' });
+  function desenharChips() {
+    chips.innerHTML = '';
+    b.habilidades.forEach(function (x) {
+      chips.appendChild(h('span', { class: 'chip', title: x.texto }, h('b', { text: x.codigo }), h('span', { class: 'tx', text: x.texto }),
+        h('button', { title: 'Remover habilidade', text: '×', onclick: function () { b.habilidades = b.habilidades.filter(function (y) { return y !== x; }); marcarSujo(); desenharChips(); desenharArvore(); } })));
+    });
+  }
+  desenharChips();
+  var vazios = camposVazios(b);
+  card.appendChild(h('div', { class: 'bh' },
+    h('span', { class: 'ttl', text: (i + 1) + '. ' + (b.objeto || b.componente) }),
+    h('button', { class: 'btn small', text: '↑', title: 'Subir', disabled: i === 0, onclick: function () { mover(b, -1); } }),
+    h('button', { class: 'btn small', text: '↓', title: 'Descer', disabled: i === n - 1, onclick: function () { mover(b, 1); } }),
+    h('button', { class: 'btn small danger', text: 'Remover', onclick: function () { confirmar('Remover bloco', 'Remover este conteúdo e seus textos do plano?', 'Remover').then(function (ok) { if (ok) { plano.blocos = plano.blocos.filter(function (x) { return x !== b; }); marcarSujo(); desenharComponentes(); } }); } })));
+  card.appendChild(chips);
+  card.appendChild(h('div', { class: 'fields' },
+    campoTexto('Referência no material didático / Conteúdo', b, 'referencia', { rows: 3, cls: 'wide' }),
+    campoTexto('Meta para o estudante (objetivos adaptados)', b, 'meta', { rows: 4 }),
+    campoTexto('Estratégias', b, 'estrategias', { rows: 6 }),
+    campoTexto('Material de apoio / recursos', b, 'recursos', { rows: 5 }),
+    campoTexto('Instrumentos e formas de avaliação', b, 'avaliacao', { rows: 5 }),
+    campoTexto('Instruções extras para a IA (opcional)', b, 'dica', { linha: true, ph: 'Ex.: usar jogos com bola; atividade em duplas…', cls: 'wide' })));
+  var err = h('div', { class: 'errline', id: 'err-' + b.id });
+  var btnC = h('button', { class: 'btn ai', id: 'ia-' + b.id, onclick: function () { gerarBloco(b, 'vazios'); } }, '✨ ' + (vazios.length === 4 ? 'Completar com IA' : vazios.length ? 'Completar campos vazios' : 'Completar com IA'));
+  btnC.disabled = !vazios.length;
+  var btnR = h('button', { class: 'btn', text: '↻ Refazer tudo com IA', onclick: function () { confirmar('Refazer com IA', 'Os campos meta, estratégias, recursos e avaliação deste bloco serão substituídos. Continuar?', 'Refazer').then(function (ok) { if (ok) gerarBloco(b, 'tudo'); }); } });
+  card.appendChild(h('div', { class: 'bh', style: 'margin:12px 0 0' }, btnC, btnR, h('span', { class: 'hint', text: 'A IA preenche só o que está vazio; o que você escreveu é mantido.' })));
+  card.appendChild(err);
+  return card;
+}
+function camposVazios(b) { return ['meta', 'estrategias', 'recursos', 'avaliacao'].filter(function (k) { return !String(b[k] || '').trim(); }); }
+
+/* ---------- IA ---------- */
+function gerarBloco(b, modo, silencioso) {
+  if (!b.habilidades.length) { toast('Adicione ao menos uma habilidade ao bloco.', true); return Promise.resolve(false); }
+  var campos = modo === 'tudo' ? ['meta', 'estrategias', 'recursos', 'avaliacao'] : camposVazios(b);
+  if (!campos.length) return Promise.resolve(true);
+  var btn = $('#ia-' + b.id), err = $('#err-' + b.id);
+  if (btn) { btn.disabled = true; btn.innerHTML = ''; btn.appendChild(h('span', { class: 'busy' })); btn.appendChild(document.createTextNode(' Gerando…')); }
+  if (err) err.textContent = '';
+  iaAtiva[b.id] = true;
+  return srv('gerarComIA', { aluno: plano.aluno, perfil: plano.perfil, bloco: b, campos: campos }).then(function (r) {
+    campos.forEach(function (k) { if (r[k]) b[k] = r[k]; });
+    marcarSujo(); iaAtiva[b.id] = false;
+    var el = $('#blk-' + b.id);
+    if (el) { var novo = cartaoBloco(b, plano.blocos.filter(function (x) { return x.componente === b.componente; }).indexOf(b), plano.blocos.filter(function (x) { return x.componente === b.componente; }).length); el.replaceWith(novo); }
+    if (!silencioso) toast('Campos gerados. Revise e ajuste o texto.');
+    return true;
+  }).catch(function (e) {
+    iaAtiva[b.id] = false;
+    var el = $('#blk-' + b.id);
+    if (el) { var novo = cartaoBloco(b, plano.blocos.filter(function (x) { return x.componente === b.componente; }).indexOf(b), plano.blocos.filter(function (x) { return x.componente === b.componente; }).length); el.replaceWith(novo); var er = $('#err-' + b.id); if (er) er.textContent = 'Erro da IA: ' + e.message; }
+    if (!silencioso) toast('Erro da IA: ' + e.message, true);
+    return false;
+  });
+}
+function completarTodos() {
+  var pf = plano.perfil;
+  var passos = [];
+  if (!pf.necessidades.trim() && !pf.interesses.trim()) passos.push(confirmar('Perfil vazio', 'O perfil do estudante está vazio; os textos ficarão mais genéricos. Continuar mesmo assim?', 'Continuar'));
+  else passos.push(Promise.resolve(true));
+  passos[0].then(function (ok) {
+    if (!ok) return;
+    var fila = plano.blocos.filter(function (b) { return camposVazios(b).length && b.habilidades.length; });
+    if (!fila.length) { toast('Nada para completar.'); return; }
+    cancelarIA = false;
+    var pb = $('#progBox'), bar = $('#progBar'), tx = $('#progTxt'); pb.style.display = 'block'; $('#btnTodos').disabled = true;
+    var feitos = 0, falhas = 0;
+    (function prox() {
+      if (cancelarIA || feitos + falhas >= fila.length) {
+        pb.style.display = 'none';
+        toast(cancelarIA ? 'Interrompido.' : 'Concluído: ' + feitos + ' bloco(s) gerado(s)' + (falhas ? ', ' + falhas + ' com erro' : '') + '.', falhas > 0);
+        desenharComponentes(); return;
+      }
+      var b = fila[feitos + falhas];
+      tx.textContent = 'Gerando ' + (feitos + falhas + 1) + ' de ' + fila.length + ' · ' + b.componente + ' – ' + (b.objeto || '').slice(0, 60);
+      bar.style.width = Math.round((feitos + falhas) / fila.length * 100) + '%';
+      gerarBloco(b, 'vazios', true).then(function (ok) { if (ok) feitos++; else falhas++; prox(); });
+    })();
+  });
+}
+
+/* ---------- impressão ---------- */
+function imprimir() {
+  var a = plano.aluno, pa = $('#printArea'); pa.innerHTML = '';
+  pa.appendChild(h('h1', { text: 'PLANO DE ATENDIMENTO EDUCACIONAL ESPECIALIZADO (PAEE) – ' + a.anoLetivo }));
+  pa.appendChild(h('h1', { text: '5. ADAPTAÇÕES NECESSÁRIAS NA SALA COMUM (CURRICULARES) – ' + a.periodo.toUpperCase() }));
+  pa.appendChild(h('table', { class: 'info' },
+    h('tr', null, h('td', { class: 'k', text: 'Estudante' }), h('td', { text: a.nome }), h('td', { class: 'k', text: 'Ano escolar' }), h('td', { text: a.anoEscolar })),
+    h('tr', null, h('td', { class: 'k', text: 'Escola' }), h('td', { text: a.escola }), h('td', { class: 'k', text: 'Período' }), h('td', { text: a.periodo + ' ' + a.anoLetivo })),
+    h('tr', null, h('td', { class: 'k', text: 'Professor(a) AEE' }), h('td', { text: a.professorAEE }), h('td', { class: 'k', text: '' }), h('td', { text: '' }))));
+  ORDEM.forEach(function (c) {
+    var bl = plano.blocos.filter(function (b) { return b.componente === c; }); if (!bl.length) return;
+    pa.appendChild(h('h2', { text: c }));
+    var t = h('table', null, h('colgroup', null, [14, 30, 26, 14, 16].map(function (w) { return h('col', { style: 'width:' + w + '%' }); })),
+      h('tr', null, ['Referência / Conteúdo', 'Objetivos e metas (BNCC)', 'Estratégias', 'Material de apoio / recursos', 'Instrumentos e formas de avaliação'].map(function (x) { return h('th', { text: x }); })));
+    bl.forEach(function (b) {
+      var hab = b.habilidades.map(function (x) { return '(' + x.codigo + ') ' + x.texto; }).join('\n') + (b.meta ? '\n\n► META: ' + b.meta : '');
+      t.appendChild(h('tr', null, [b.referencia, hab, b.estrategias, b.recursos, b.avaliacao].map(function (x) { return h('td', { text: x || '' }); })));
+    });
+    pa.appendChild(t);
+  });
+  if (plano.observacoes) { pa.appendChild(h('h2', { text: 'Observações' })); pa.appendChild(h('p', { text: plano.observacoes, style: 'white-space:pre-wrap' })); }
+  setTimeout(function () { window.print(); }, 100);
+}
+
+init();
+</script>
+</body>
+</html>
